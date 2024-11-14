@@ -11,7 +11,8 @@ import {
   RegisteredComponent,
 } from "./model/component-metadata";
 import { ComponentPropsMetadata } from "./model/component-props-metadata";
-import { GenerateComponentResponse } from "./model/generate-component-response";
+import { GenerateComponentResponse, GenerationStage } from "./model/generate-component-response";
+
 interface ComponentRegistry {
   [key: string]: RegisteredComponent;
 }
@@ -86,9 +87,15 @@ export default class HydraClient {
 
   public async generateComponent(
     message: string,
-    onProgressUpdate: (stage: string) => void = (progressMessage) => { }
+    onProgressUpdate: (response: GenerateComponentResponse) => void = () => { }
   ): Promise<GenerateComponentResponse> {
-    onProgressUpdate("Choosing component");
+    onProgressUpdate({
+      component: null,
+      message: "Choosing component...",
+      stage: GenerationStage.CHOOSING_COMPONENT,
+      loading: true
+    });
+
     const availableComponents = await this.getAvailableComponents(
       this.componentList
     );
@@ -97,17 +104,43 @@ export default class HydraClient {
       availableComponents,
       this.getComponentChoice
     );
+
     if (componentDecision.componentName === null) {
-      return componentDecision;
+      const response = {
+        component: null,
+        message: componentDecision.message,
+        stage: GenerationStage.COMPLETE,
+        loading: false
+      };
+      onProgressUpdate(response);
+      return response;
     }
 
+    const componentToHydrate = componentDecision.componentName ?
+      React.createElement(
+        this.getComponentFromRegistry(
+          componentDecision.componentName,
+          this.componentList
+        ).component,
+        { ...componentDecision.props, loading: true }
+      ) : null;
+
     if (componentDecision.toolCallRequest) {
-      onProgressUpdate("Getting additional data");
-      return await this.handleToolCallRequest(
+      onProgressUpdate({
+        component: componentToHydrate,
+        message: "Fetching additional context...",
+        stage: GenerationStage.FETCHING_CONTEXT,
+        loading: true
+      });
+
+      const response = await this.handleToolCallRequest(
         componentDecision,
         availableComponents,
         this.hydrateComponentWithToolResponse
       );
+
+      onProgressUpdate(response);
+      return response;
     } else {
       this.chatHistory.push({
         sender: "hydra",
@@ -115,11 +148,10 @@ export default class HydraClient {
       });
       this.chatHistory.push({
         sender: "hydra",
-        message: `componentName: ${componentDecision.componentName
-          } \n props: ${JSON.stringify(componentDecision.props)}`,
+        message: `componentName: ${componentDecision.componentName} \n props: ${JSON.stringify(componentDecision.props)}`,
       });
 
-      return {
+      const response = {
         component: React.createElement(
           this.getComponentFromRegistry(
             componentDecision.componentName,
@@ -128,7 +160,12 @@ export default class HydraClient {
           componentDecision.props
         ),
         message: componentDecision.message,
+        stage: GenerationStage.COMPLETE,
+        loading: false
       };
+
+      onProgressUpdate(response);
+      return response;
     }
   }
 
@@ -217,6 +254,8 @@ export default class HydraClient {
         hydratedComponentChoice.props
       ),
       message: hydratedComponentChoice.message,
+      stage: GenerationStage.COMPLETE,
+      loading: false
     };
   }
 
