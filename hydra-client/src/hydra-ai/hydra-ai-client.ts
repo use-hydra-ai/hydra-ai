@@ -17,8 +17,6 @@ interface ComponentRegistry {
 }
 
 export interface HydraClientOptions {
-  model?: string;
-  provider?: string;
   hydraApiKey?: string;
   hydraApiUrl?: string;
   getComponentChoice?: (
@@ -39,8 +37,6 @@ export interface HydraClientOptions {
 export default class HydraClient {
   private componentList: ComponentRegistry = {};
   private chatHistory: ChatMessage[] = [];
-  private model?: string;
-  private provider?: string;
   private hydraApiKey?: string;
   private hydraApiUrl?: string;
   private getComponentChoice: (
@@ -58,15 +54,11 @@ export default class HydraClient {
   ) => Promise<ComponentChoice>;
 
   constructor({
-    model,
-    provider,
     hydraApiKey,
     hydraApiUrl,
     getComponentChoice = hydraGenerate,
     hydrateComponentWithToolResponse = hydraHydrate,
   }: HydraClientOptions = {}) {
-    this.model = model;
-    this.provider = provider;
     this.hydraApiKey = hydraApiKey;
     this.hydraApiUrl = hydraApiUrl;
     this.getComponentChoice = getComponentChoice;
@@ -94,7 +86,7 @@ export default class HydraClient {
 
   public async generateComponent(
     message: string,
-    onProgressUpdate: (stage: string) => void = (progressMessage) => {}
+    onProgressUpdate: (stage: string) => void = (progressMessage) => { }
   ): Promise<GenerateComponentResponse> {
     onProgressUpdate("Choosing component");
     const availableComponents = await this.getAvailableComponents(
@@ -123,9 +115,8 @@ export default class HydraClient {
       });
       this.chatHistory.push({
         sender: "hydra",
-        message: `componentName: ${
-          componentDecision.componentName
-        } \n props: ${JSON.stringify(componentDecision.props)}`,
+        message: `componentName: ${componentDecision.componentName
+          } \n props: ${JSON.stringify(componentDecision.props)}`,
       });
 
       return {
@@ -213,9 +204,8 @@ export default class HydraClient {
 
     this.chatHistory.push({
       sender: "hydra",
-      message: `componentName: ${
-        hydratedComponentChoice.componentName
-      } \n props: ${JSON.stringify(hydratedComponentChoice.props)}`,
+      message: `componentName: ${hydratedComponentChoice.componentName
+        } \n props: ${JSON.stringify(hydratedComponentChoice.props)}`,
     });
 
     return {
