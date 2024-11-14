@@ -71,17 +71,19 @@ export default class HydraClient {
     description: string,
     component: ComponentType<any>,
     propsDefinition: ComponentPropsMetadata = {},
-    contextTools: ComponentContextTool[] = []
+    contextTools: ComponentContextTool[] = [],
+    loadingComponent?: ComponentType<any>
   ): Promise<void> {
     if (this.componentList[name]) {
       console.warn(`overwriting component ${name}`);
     }
     this.componentList[name] = {
       component,
+      loadingComponent,
       name,
       description,
       props: propsDefinition,
-      contextTools: contextTools,
+      contextTools,
     };
   }
 
@@ -116,14 +118,13 @@ export default class HydraClient {
       return response;
     }
 
-    const componentToHydrate = componentDecision.componentName ?
-      React.createElement(
-        this.getComponentFromRegistry(
-          componentDecision.componentName,
-          this.componentList
-        ).component,
-        { ...componentDecision.props, loading: true }
-      ) : null;
+    const componentToHydrate = componentDecision.componentName
+      ? this.createComponentElement(
+        componentDecision.componentName,
+        componentDecision.props,
+        true
+      )
+      : null;
 
     if (componentDecision.toolCallRequest) {
       onProgressUpdate({
@@ -151,7 +152,7 @@ export default class HydraClient {
         message: `componentName: ${componentDecision.componentName} \n props: ${JSON.stringify(componentDecision.props)}`,
       });
 
-      const response = {
+      const response: GenerateComponentResponse = {
         component: React.createElement(
           this.getComponentFromRegistry(
             componentDecision.componentName,
@@ -326,4 +327,21 @@ export default class HydraClient {
 
     return tool.getComponentContext(...parameterValues);
   };
+
+  private createComponentElement(
+    componentName: string,
+    props: any,
+    loading: boolean = false
+  ): React.ReactElement | null {
+    const registeredComponent = this.getComponentFromRegistry(
+      componentName,
+      this.componentList
+    );
+
+    const ComponentToUse = loading && registeredComponent.loadingComponent
+      ? registeredComponent.loadingComponent
+      : registeredComponent.component;
+
+    return React.createElement(ComponentToUse, props);
+  }
 }
