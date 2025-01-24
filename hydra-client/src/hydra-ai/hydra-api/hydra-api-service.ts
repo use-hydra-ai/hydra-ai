@@ -12,7 +12,8 @@ export const hydraGenerate = async (
   messageHistory: ChatMessage[],
   availableComponents: AvailableComponents,
   apiKey?: string,
-  url: string = defaultUrl
+  url: string = defaultUrl,
+  threadId?: string,
 ): Promise<ComponentDecision> => {
   if (!apiKey) {
     throw new Error("API key is required for using hydraAPI");
@@ -28,6 +29,7 @@ export const hydraGenerate = async (
       body: JSON.stringify({
         messageHistory,
         availableComponents,
+        threadId,
       }),
     });
 
@@ -48,7 +50,7 @@ export const hydraHydrate = async (
   component: AvailableComponent,
   toolResponse: any,
   apiKey?: string,
-  url: string = defaultUrl
+  url: string = defaultUrl,
 ): Promise<ComponentChoice> => {
   if (!apiKey) {
     throw new Error("API key is required for using hydraAPI");
