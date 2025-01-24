@@ -51,6 +51,7 @@ export const hydraHydrate = async (
   toolResponse: any,
   apiKey?: string,
   url: string = defaultUrl,
+  threadId?: string,
 ): Promise<ComponentChoice> => {
   if (!apiKey) {
     throw new Error("API key is required for using hydraAPI");
@@ -69,6 +70,7 @@ export const hydraHydrate = async (
         messageHistory,
         component,
         toolResponse,
+        threadId,
       }),
     });
 
