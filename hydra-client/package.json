@@ -37,7 +37,8 @@
   },
   "peerDependencies": {
     "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0"
+    "@types/react-dom": "^18.0.0",
+    "@types/json-schema": "^7.0.15"
   },
   "dependencies": {
     "autoprefixer": "^10.4.19",
