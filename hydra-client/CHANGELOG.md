@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.52](https://github.com/use-hydra-ai/hydra-ai/compare/hydra-ai-v0.0.51...hydra-ai-v0.0.52) (2025-02-24)
+
+
+### Miscellaneous
+
+* move release-please to correct location ([#65](https://github.com/use-hydra-ai/hydra-ai/issues/65)) ([96bf3fc](https://github.com/use-hydra-ai/hydra-ai/commit/96bf3fc782f50301d9920e4ce9b97c8dd84c6739))
+* update repo url ([#64](https://github.com/use-hydra-ai/hydra-ai/issues/64)) ([7cf498f](https://github.com/use-hydra-ai/hydra-ai/commit/7cf498f5aa3679bbdb7e7de6b0df8632e7a79e05))
+
 ## [0.0.51](https://github.com/use-hydra-ai/hydra-ai/compare/hydra-ai-v0.0.50...hydra-ai-v0.0.51) (2025-02-19)
 
 
