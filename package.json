@@ -11,7 +11,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
     "prettier": "^3.5.3",
@@ -22,6 +22,15 @@
   "workspaces": [
     "react",
     "showcase",
-    "hydra-client"
-  ]
+    "hydra-client",
+    "packages/*"
+  ],
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
+  },
+  "volta": {
+    "node": "20.18.1",
+    "npm": "10.9.2"
+  }
 }
