@@ -301,7 +301,7 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
       const headMessages = prevMap[currentThreadId].messages.slice(0, -1);
       const lastMessage =
         prevMap[currentThreadId].messages[
-          prevMap[currentThreadId].messages.length - 1
+        prevMap[currentThreadId].messages.length - 1
         ];
       const updatedLastMessage = {
         ...lastMessage,
@@ -337,10 +337,25 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
     async (
       stream: AsyncIterable<TamboAI.Beta.Threads.ThreadAdvanceResponse>,
       params: TamboAI.Beta.Threads.ThreadAdvanceParams,
+      messageIdToRemove?: string,
     ): Promise<TamboThreadMessage> => {
       let finalMessage: TamboThreadMessage | undefined;
       let hasSetThreadId = false;
       updateThreadStatus(GenerationStage.STREAMING_RESPONSE);
+
+      // If there's a message to remove, remove it before starting the new stream
+      if (messageIdToRemove && currentThread) {
+        setThreadMap((prevMap) => ({
+          ...prevMap,
+          [currentThread.id]: {
+            ...prevMap[currentThread.id],
+            messages: prevMap[currentThread.id].messages.filter(
+              (msg) => msg.id !== messageIdToRemove
+            ),
+          },
+        }));
+      }
+
       for await (const chunk of stream) {
         if (chunk.responseMessageDto.toolCallRequest) {
           updateThreadStatus(GenerationStage.FETCHING_CONTEXT);
@@ -348,26 +363,28 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
             chunk.responseMessageDto,
             toolRegistry,
           );
-          const toolCallResponseParams: TamboAI.Beta.Threads.ThreadAdvanceParams =
-            {
-              ...params,
-              messageToAppend: {
-                content: [{ type: "text", text: "tool response" }],
-                role: "tool",
-                actionType: "tool_response",
-                toolResponse: toolCallResponse,
-                component: chunk.responseMessageDto.component,
-              },
-            };
+          const toolCallResponseParams: TamboAI.Beta.Threads.ThreadAdvanceParams = {
+            ...params,
+            messageToAppend: {
+              content: [{ type: "text", text: "tool response" }],
+              role: "tool",
+              actionType: "tool_response",
+              toolResponse: toolCallResponse,
+              component: chunk.responseMessageDto.component,
+            },
+          };
           updateThreadStatus(GenerationStage.STREAMING_RESPONSE);
           const toolCallResponseStream = await advanceStream(
             client,
             toolCallResponseParams,
             chunk.responseMessageDto.threadId,
           );
+
+          // Pass the current message's ID to be removed when the new stream starts, since we now know it is a tool call request message
           return handleAdvanceStream(
             toolCallResponseStream,
             toolCallResponseParams,
+            finalMessage?.id
           );
         } else {
           if (
@@ -382,18 +399,18 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
           if (!finalMessage) {
             finalMessage = chunk.responseMessageDto.component?.componentName
               ? renderComponentIntoMessage(
-                  chunk.responseMessageDto,
-                  componentList,
-                )
+                chunk.responseMessageDto,
+                componentList,
+              )
               : chunk.responseMessageDto;
             addThreadMessage(finalMessage, false);
           } else {
             const previousId = finalMessage.id;
             finalMessage = chunk.responseMessageDto.component?.componentName
               ? renderComponentIntoMessage(
-                  chunk.responseMessageDto,
-                  componentList,
-                )
+                chunk.responseMessageDto,
+                componentList,
+              )
               : chunk.responseMessageDto;
             updateThreadMessage(previousId, finalMessage, false);
           }
@@ -489,17 +506,17 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
           toolRegistry,
         );
         const toolCallResponseParams: TamboAI.Beta.Threads.ThreadAdvanceParams =
-          {
-            ...params,
-            messageToAppend: {
-              ...params.messageToAppend,
-              content: [{ type: "text", text: "tool response" }],
-              role: "tool",
-              actionType: "tool_response",
-              toolResponse: toolCallResponse,
-              component: advanceResponse.responseMessageDto.component,
-            },
-          };
+        {
+          ...params,
+          messageToAppend: {
+            ...params.messageToAppend,
+            content: [{ type: "text", text: "tool response" }],
+            role: "tool",
+            actionType: "tool_response",
+            toolResponse: toolCallResponse,
+            component: advanceResponse.responseMessageDto.component,
+          },
+        };
         updateThreadStatus(GenerationStage.HYDRATING_COMPONENT);
         advanceResponse = await client.beta.threads.advanceById(
           advanceResponse.responseMessageDto.threadId,
@@ -510,9 +527,9 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
       const finalMessage = advanceResponse.responseMessageDto.component
         ?.componentName
         ? renderComponentIntoMessage(
-            advanceResponse.responseMessageDto,
-            componentList,
-          )
+          advanceResponse.responseMessageDto,
+          componentList,
+        )
         : advanceResponse.responseMessageDto;
       await switchCurrentThread(advanceResponse.responseMessageDto.threadId);
       updateThreadStatus(GenerationStage.COMPLETE);
