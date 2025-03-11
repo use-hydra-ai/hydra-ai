@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
 import turboPlugin from "eslint-plugin-turbo";
+import { globalIgnores } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 /**
@@ -48,4 +49,5 @@ export default tseslint.config(
       },
     },
   },
+  globalIgnores(["examples/**"]),
 );
