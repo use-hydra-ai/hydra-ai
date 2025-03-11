@@ -1,5 +1,5 @@
 {
-  "name": "@tambo-ai-cloud/eslint-config",
+  "name": "@tambo-ai/eslint-config",
   "version": "0.0.0",
   "type": "module",
   "private": true,
