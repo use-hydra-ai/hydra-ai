@@ -33,8 +33,7 @@
     "format": "prettier --write .",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "format:lint": "npm run format && npm run lint:fix",
-    "prepare": "husky"
+    "format:lint": "npm run format && npm run lint:fix"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
