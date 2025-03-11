@@ -253,6 +253,23 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
     [client.beta.threads.messages, currentThreadId],
   );
 
+  const deleteThreadMessage = useCallback(
+    (messageId: string) => {
+      if (!currentThread) return;
+
+      setThreadMap((prevMap) => ({
+        ...prevMap,
+        [currentThread.id]: {
+          ...prevMap[currentThread.id],
+          messages: prevMap[currentThread.id].messages.filter(
+            (msg) => msg.id !== messageId
+          ),
+        },
+      }));
+    },
+    [currentThread]
+  );
+
   useEffect(() => {
     if (unresolvedThreadId && currentThreadId !== unresolvedThreadId) {
       setThreadMap((prevMap) => {
@@ -333,6 +350,8 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
     [currentThreadId],
   );
 
+
+
   const handleAdvanceStream = useCallback(
     async (
       stream: AsyncIterable<TamboAI.Beta.Threads.ThreadAdvanceResponse>,
@@ -341,22 +360,15 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
     ): Promise<TamboThreadMessage> => {
       let finalMessage: TamboThreadMessage | undefined;
       let hasSetThreadId = false;
+      let isFirstChunk = true;
       updateThreadStatus(GenerationStage.STREAMING_RESPONSE);
 
-      // If there's a message to remove, remove it before starting the new stream
-      if (messageIdToRemove && currentThread) {
-        setThreadMap((prevMap) => ({
-          ...prevMap,
-          [currentThread.id]: {
-            ...prevMap[currentThread.id],
-            messages: prevMap[currentThread.id].messages.filter(
-              (msg) => msg.id !== messageIdToRemove
-            ),
-          },
-        }));
-      }
-
       for await (const chunk of stream) {
+        if (isFirstChunk && messageIdToRemove) {
+          deleteThreadMessage(messageIdToRemove);
+        }
+        isFirstChunk = false;
+
         if (chunk.responseMessageDto.toolCallRequest) {
           updateThreadStatus(GenerationStage.FETCHING_CONTEXT);
           const toolCallResponse = await handleToolCall(
@@ -437,6 +449,7 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
       addThreadMessage,
       updateThreadMessage,
       updateThreadStatus,
+      deleteThreadMessage,
     ],
   );
 
