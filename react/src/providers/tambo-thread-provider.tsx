@@ -288,7 +288,7 @@ export const TamboThreadProvider: React.FC<PropsWithChildren> = ({
       }
       await fetchThread(threadId);
     },
-    [fetchThread, threadMap, currentThreadId],
+    [fetchThread, threadMap],
   );
 
   const setLastThreadStatus = (status: GenerationStage) => {
