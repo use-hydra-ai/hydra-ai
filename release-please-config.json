@@ -3,6 +3,7 @@
   "plugins": ["node-workspace"],
   "always-link-local": true,
   "separate-pull-requests": true,
+  "always-update": true,
   "packages": {
     "hydra-client": {},
     "react": {},
