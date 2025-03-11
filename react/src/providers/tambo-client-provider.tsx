@@ -1,4 +1,4 @@
-import TamboAI from "@tambo-ai/typescript-sdk";
+import TamboAI, { ClientOptions } from "@tambo-ai/typescript-sdk";
 import { QueryClient } from "@tanstack/react-query";
 import React, { createContext, PropsWithChildren, useState } from "react";
 
@@ -19,7 +19,11 @@ const TamboClientContext = createContext<TamboClientContextProps | undefined>(
 export const TamboClientProvider: React.FC<
   PropsWithChildren<TamboClientProviderProps>
 > = ({ children, tamboUrl, apiKey }) => {
-  const [client] = useState(() => new TamboAI({ baseURL: tamboUrl, apiKey }));
+  const tamboConfig: ClientOptions = { apiKey };
+  if (tamboUrl) {
+    tamboConfig.baseURL = tamboUrl;
+  }
+  const [client] = useState(() => new TamboAI(tamboConfig));
   const [queryClient] = useState(() => new QueryClient());
   return (
     <TamboClientContext.Provider value={{ client, queryClient }}>
