@@ -6,7 +6,7 @@
 version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/hydra-client" # Location of package manifests
+    directory: "/" # Location of package manifests
     open-pull-requests-limit: 10
     schedule:
       interval: "weekly"
@@ -14,3 +14,28 @@ updates:
       prefix: "chore"
       prefix-development: "chore"
       include: "scope"
+    ignore:
+      - dependency-name: "react"
+        versions: [">=19"]
+      - dependency-name: "react-dom"
+        versions: [">=19"]
+      - dependency-name: "@types/react"
+        versions: [">=19"]
+      - dependency-name: "@types/react-dom"
+        versions: [">=19"]
+    groups:
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      eslint:
+        patterns:
+          - "@eslint/*"
+          - "eslint"
+          - "typescript-eslint"
+          - "eslint-plugin-*"
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
