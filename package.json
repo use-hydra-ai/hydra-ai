@@ -10,6 +10,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint:fix": "turbo lint -- --fix",
     "lint": "turbo lint",
+    "prepare": "husky",
     "prettier-check": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
