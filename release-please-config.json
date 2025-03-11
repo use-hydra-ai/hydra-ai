@@ -4,6 +4,9 @@
     "hydra-client": {},
     "react": {
       "package-name": "@tambo-ai/react"
+    },
+    "showcase": {
+      "package-name": "@tambo-ai/showcase"
     }
   },
   "changelog-sections": [
