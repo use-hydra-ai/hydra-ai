@@ -35,42 +35,44 @@ export function useTamboComponentState<S>(
       : initialValue;
   }, [message?.componentState, keyName, initialValue]);
 
+  const initializeState = async () => {
+    if (!message) {
+      console.warn(`Cannot initialize state for missing message ${messageId}`);
+      return;
+    }
+    try {
+      await Promise.all([
+        updateThreadMessage(
+          messageId,
+          {
+            ...message,
+            componentState: {
+              ...message.componentState,
+              [keyName]: initialValue,
+            },
+          },
+          false,
+        ),
+        client.beta.threads.messages.updateComponentState(threadId, messageId, {
+          state: { [keyName]: initialValue },
+        }),
+      ]);
+    } catch (err) {
+      console.warn("Failed to initialize component state:", err);
+    }
+  };
+
   // send initial state
   useEffect(() => {
-    const initializeState = async () => {
-      const shouldInitialize =
-        message &&
-        initialValue !== undefined &&
-        (!message.componentState || !(keyName in message.componentState));
+    const shouldInitialize =
+      message &&
+      initialValue !== undefined &&
+      (!message.componentState || !(keyName in message.componentState));
 
-      if (shouldInitialize) {
-        try {
-          await Promise.all([
-            updateThreadMessage(
-              messageId,
-              {
-                ...message,
-                componentState: {
-                  ...message.componentState,
-                  [keyName]: initialValue,
-                },
-              },
-              false,
-            ),
-            client.beta.threads.messages.updateComponentState(
-              threadId,
-              messageId,
-              { state: { [keyName]: initialValue } },
-            ),
-          ]);
-        } catch (err) {
-          console.warn("Failed to initialize component state:", err);
-        }
-      }
-    };
-
-    initializeState();
-  }, []);
+    if (shouldInitialize) {
+      initializeState();
+    }
+  }, [messageId]);
 
   const setValue = useCallback(
     async (newValue: S) => {
