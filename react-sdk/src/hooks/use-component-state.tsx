@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useTamboClient, useTamboThread } from "../providers";
 import {
   useTamboCurrentMessage,
@@ -27,14 +27,51 @@ export function useTamboComponentState<S>(
   const client = useTamboClient();
 
   const message = useTamboCurrentMessage();
-  if (!message) {
-    // throw new Error(`Message not found ${messageId}`);
-    console.warn(`Message not found ${messageId}`);
-  }
-  const value =
-    message?.componentState && keyName in message.componentState
+
+  const value = useMemo(() => {
+    if (!message?.componentState) return initialValue;
+    return keyName in message.componentState
       ? (message.componentState[keyName] as S)
       : initialValue;
+  }, [message?.componentState, keyName, initialValue]);
+
+  // send initial state
+  useEffect(() => {
+    const initializeState = async () => {
+      const shouldInitialize =
+        message &&
+        initialValue !== undefined &&
+        (!message.componentState || !(keyName in message.componentState));
+
+      if (shouldInitialize) {
+        try {
+          await Promise.all([
+            updateThreadMessage(
+              messageId,
+              {
+                ...message,
+                componentState: {
+                  ...message.componentState,
+                  [keyName]: initialValue,
+                },
+              },
+              false,
+            ),
+            client.beta.threads.messages.updateComponentState(
+              threadId,
+              messageId,
+              { state: { [keyName]: initialValue } },
+            ),
+          ]);
+        } catch (err) {
+          console.warn("Failed to initialize component state:", err);
+        }
+      }
+    };
+
+    initializeState();
+  }, []);
+
   const setValue = useCallback(
     async (newValue: S) => {
       if (!message) {
