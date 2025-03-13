@@ -56,6 +56,9 @@ export interface useTamboSuggestionsResultInternal {
     Error,
     AbortController
   >;
+
+  /** The full suggestions query object from React Query */
+  suggestionsQuery: ReturnType<typeof useTamboQuery>;
 }
 
 type useTamboSuggestionsResult = CombinedMutationResult<any, Error> &
@@ -68,7 +71,7 @@ type useTamboSuggestionsResult = CombinedMutationResult<any, Error> &
  * @returns Object containing suggestions state and control functions
  */
 export function useTamboSuggestions(
-  options: useTamboSuggestionsOptions = {},
+  options: useTamboSuggestionsOptions = {}
 ): useTamboSuggestionsResult {
   const { maxSuggestions = 3 } = options;
   const { thread } = useTamboThread();
@@ -104,7 +107,7 @@ export function useTamboSuggestions(
       const components = getAvailableComponents(
         componentList,
         toolRegistry,
-        componentToolAssociations,
+        componentToolAssociations
       );
 
       return await tamboClient.beta.threads.suggestions.generate(
@@ -114,7 +117,7 @@ export function useTamboSuggestions(
           maxSuggestions,
           // The API expects an array of arrays for availableComponents
           availableComponents: [components],
-        },
+        }
       );
     },
     // Only run the query if we have a valid message from hydra
@@ -167,7 +170,7 @@ export function useTamboSuggestions(
       const components = getAvailableComponents(
         componentList,
         toolRegistry,
-        componentToolAssociations,
+        componentToolAssociations
       );
 
       return await tamboClient.beta.threads.suggestions.generate(
@@ -178,7 +181,7 @@ export function useTamboSuggestions(
           // The API expects an array of arrays for availableComponents
           availableComponents: [components],
         },
-        { signal: abortController.signal },
+        { signal: abortController.signal }
       );
     },
     // Don't retry on failure
@@ -197,6 +200,7 @@ export function useTamboSuggestions(
     selectedSuggestionId,
     acceptResult: acceptMutationState,
     generateResult: generateMutationState,
+    suggestionsQuery,
     ...combineMutationResults(acceptMutationState, generateMutationState),
   };
 }
