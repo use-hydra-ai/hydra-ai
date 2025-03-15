@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/tambo-ai/tambo/compare/showcase-v0.1.3...showcase-v0.1.4) (2025-03-15)
+
+
+### Miscellaneous
+
+* removes old files and update readmes ([#117](https://github.com/tambo-ai/tambo/issues/117)) ([94e6dde](https://github.com/tambo-ai/tambo/commit/94e6dded0d8abd15b7f2b19c0837cf9baf2f279d))
+
 ## [0.1.3](https://github.com/tambo-ai/tambo/compare/showcase-v0.1.2...showcase-v0.1.3) (2025-03-11)
 
 
